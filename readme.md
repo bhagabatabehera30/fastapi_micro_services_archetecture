@@ -98,3 +98,31 @@ A local pgAdmin database administration panel has been configured for easy data 
 A local SMTP server has been integrated to intercept and test outgoing emails in your browser without utilizing an external SMTP provider:
 *   **Web Console**: [http://localhost:8025](http://localhost:8025)
 *   **SMTP Port**: `1025` (Accessible within the container network via host name `mailpit`)
+
+---
+
+## 🗄️ Database Migrations (Alembic)
+
+Database migrations are scoped and managed locally inside each microservice container (e.g., `services/auth-service/`) to ensure high independence. 
+
+### How to Create & Apply Migrations:
+
+When modifying your SQLAlchemy models (e.g., adding tables/columns to `user.py`), follow these steps:
+
+#### 1. Generate the Migration Revision script:
+Run the autogenerate command inside the running service container. This compares your SQLAlchemy code models against the active database state and writes a diff migration file:
+```bash
+docker compose exec auth-service alembic revision --autogenerate -m "added_cols_description"
+```
+
+#### 2. Apply Migrations to the Database:
+To execute the generated migration script and upgrade your active Postgres database schema to the latest version, run:
+```bash
+docker compose exec auth-service alembic upgrade head
+```
+
+#### 3. Restore Local Host File Ownership:
+Because Alembic runs as `root` inside the docker container runtime, the newly generated migration file in `alembic/versions/` is initially owned by root. Restore user permissions to edit/view files locally on your host machine:
+```bash
+docker compose exec auth-service chown -R 1000:1000 /app/services/auth-service/alembic
+```
