@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 from jose import jwt
 import bcrypt
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from src.domain.entities.user import User
+from src.domain.entities.role import Role
 from src.infrastructure.repositories.user_repository import UserRepository
 from src.presentation.schemas.user import UserCreate
 import os
@@ -41,9 +43,22 @@ class AuthUseCase:
         new_user = User(
             username=user_in.username,
             email=user_in.email,
-            hashed_password=hashed_pw,
-            role=user_in.role
+            hashed_password=hashed_pw
         )
+        
+        # Look up role dynamically
+        role_stmt = select(Role).where(Role.name.ilike(user_in.role))
+        result = await self.user_repo.session.execute(role_stmt)
+        role = result.scalar_one_or_none()
+        if role:
+            new_user.roles = [role]
+        else:
+            default_role_stmt = select(Role).where(Role.name.ilike("user"))
+            default_result = await self.user_repo.session.execute(default_role_stmt)
+            default_role = default_result.scalar_one_or_none()
+            if default_role:
+                new_user.roles = [default_role]
+
         return await self.user_repo.create(new_user)
 
     async def authenticate_user(self, username: str, password: str) -> str:
@@ -54,8 +69,23 @@ class AuthUseCase:
                 detail="Incorrect username or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        
+        # Aggregate permissions from all roles
+        permissions_set = set()
+        for role in user.roles:
+            for perm in role.permissions:
+                permissions_set.add(perm.slug)
+        permissions_list = list(permissions_set)
+        
+        primary_role = user.roles[0].name if user.roles else "user"
+        
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = self.create_access_token(
-            data={"sub": str(user.id), "role": user.role}, expires_delta=access_token_expires
+            data={
+                "sub": str(user.id), 
+                "role": primary_role,
+                "permissions": permissions_list
+            }, 
+            expires_delta=access_token_expires
         )
         return access_token
