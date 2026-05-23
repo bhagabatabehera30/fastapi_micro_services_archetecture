@@ -41,7 +41,8 @@ class AuthUseCase:
         new_user = User(
             username=user_in.username,
             email=user_in.email,
-            hashed_password=hashed_pw
+            hashed_password=hashed_pw,
+            role=user_in.role
         )
         return await self.user_repo.create(new_user)
 
@@ -55,6 +56,6 @@ class AuthUseCase:
             )
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = self.create_access_token(
-            data={"sub": str(user.id)}, expires_delta=access_token_expires
+            data={"sub": str(user.id), "role": user.role}, expires_delta=access_token_expires
         )
         return access_token

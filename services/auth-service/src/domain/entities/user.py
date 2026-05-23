@@ -10,6 +10,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column()
     is_active: Mapped[bool] = mapped_column(default=True)
+    role: Mapped[str] = mapped_column(default="user", nullable=False)
     phone_number: Mapped[str] = mapped_column(index=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(index=True, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(index=True, nullable=True)

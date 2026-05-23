@@ -12,8 +12,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 class TokenData(BaseModel):
     user_id: int
+    role: str
 
-def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+def get_current_token_data(token: str = Depends(oauth2_scheme)) -> TokenData:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -22,10 +23,24 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_str: str = payload.get("sub")
+        role_str: str = payload.get("role", "user")
         if user_id_str is None:
             raise credentials_exception
-        token_data = TokenData(user_id=int(user_id_str))
+        return TokenData(user_id=int(user_id_str), role=role_str)
     except (JWTError, ValueError):
         raise credentials_exception
-    
+
+def get_current_user_id(token_data: TokenData = Depends(get_current_token_data)) -> int:
     return token_data.user_id
+
+class RoleChecker:
+    def __init__(self, allowed_roles: list[str]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, token_data: TokenData = Depends(get_current_token_data)) -> TokenData:
+        if token_data.role not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Operation not permitted. Required roles: {self.allowed_roles}. Current role: {token_data.role}."
+            )
+        return token_data
