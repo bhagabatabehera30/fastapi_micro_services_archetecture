@@ -4,3 +4,4 @@ celery[redis]==5.3.6
 redis==5.0.1
 pydantic==2.6.0
 python-jose[cryptography]==3.3.0
+fastapi-mail>=1.4.1

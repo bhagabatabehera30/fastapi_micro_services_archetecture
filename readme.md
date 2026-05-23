@@ -90,3 +90,11 @@ A local pgAdmin database administration panel has been configured for easy data 
 *   **Address**: [http://localhost:5050](http://localhost:5050)
 *   **Email**: `root@admin.com`
 *   **Password**: `root@123`
+
+---
+
+## 📬 Local SMTP Mail Viewer (Mailpit)
+
+A local SMTP server has been integrated to intercept and test outgoing emails in your browser without utilizing an external SMTP provider:
+*   **Web Console**: [http://localhost:8025](http://localhost:8025)
+*   **SMTP Port**: `1025` (Accessible within the container network via host name `mailpit`)

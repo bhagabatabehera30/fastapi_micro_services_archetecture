@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly System Metrics Report</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 35px 25px;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .content {
+            padding: 40px 30px;
+            line-height: 1.6;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 0;
+            margin-bottom: 20px;
+            letter-spacing: -0.01em;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+        .body-text {
+            color: #475569;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: separate;
+            border-spacing: 12px 0;
+        }
+        .stat-card {
+            display: table-cell;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            width: 33.33%;
+        }
+        .stat-num {
+            font-size: 28px;
+            font-weight: 800;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+        .data-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-success {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+        .badge-warning {
+            background-color: #fef9c3;
+            color: #a16207;
+        }
+        .footer {
+            background-color: #fafafa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+        }
+        .footer p {
+            margin: 0;
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        .footer a {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Weekly Analytics Report</h1>
+            <p>Generated for {{ username }} on {{ date }}</p>
+        </div>
+        <div class="content">
+            <h2 class="section-title">Performance Summary</h2>
+            <p class="body-text">We've processed all background analytics tasks for your microservices stack. Here is the operational summary for your platform workspaces:</p>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-num">{{ stats.total_requests }}</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">{{ stats.uptime }}%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">{{ stats.latency }}ms</div>
+                    <div class="stat-label">Avg Latency</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Microservice Node Status</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Service Node</th>
+                        <th>Health Status</th>
+                        <th>CPU Load</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for node in nodes %}
+                    <tr>
+                        <td><strong>{{ node.name }}</strong></td>
+                        <td>
+                            <span class="status-badge {% if node.status == 'online' %}badge-success{% else %}badge-warning{% endif %}">
+                                {{ node.status }}
+                            </span>
+                        </td>
+                        <td>{{ node.cpu_load }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p class="body-text" style="margin-top: 30px;">All system channels are operating efficiently, backed by reliable task offloads. No manual maintenance actions are required at this time.</p>
+        </div>
+        <div class="footer">
+            <p>This analytics brief is private. Check your dashboard for granular control logs.</p>
+            <p style="margin-top: 10px;">SaaS Platform Systems Node &bull; San Francisco, CA</p>
+            <p style="margin-top: 5px;"><a href="{{ dashboard_url }}">Access Full Dashboard metrics</a></p>
+        </div>
+    </div>
+</body>
+</html>

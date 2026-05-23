@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alert</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #fef2f2;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.08), 0 8px 10px -6px rgba(239, 68, 68, 0.04);
+            overflow: hidden;
+            border: 1px solid #fee2e2;
+        }
+        .header {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+        .content {
+            padding: 40px 30px;
+            line-height: 1.6;
+        }
+        .alert-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #991b1b;
+            margin-top: 0;
+            margin-bottom: 15px;
+            letter-spacing: -0.01em;
+        }
+        .body-text {
+            color: #475569;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .security-box {
+            background-color: #fcf8f8;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #fecaca;
+        }
+        .detail-row {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+        .detail-row strong {
+            color: #1e293b;
+        }
+        .otp-code {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 0.25em;
+            color: #dc2626;
+            margin: 25px 0;
+            padding: 15px;
+            background: #fef2f2;
+            border: 2px dashed #fecaca;
+            border-radius: 12px;
+        }
+        .caution-alert {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            color: #78350f;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .footer {
+            background-color: #fafafa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+        }
+        .footer p {
+            margin: 0;
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        .footer a {
+            color: #ef4444;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Security Alert</h1>
+        </div>
+        <div class="content">
+            <h2 class="alert-title">Critical Security Code Request</h2>
+            <p class="body-text">Hello {{ username }},</p>
+            <p class="body-text">We received a request to perform a sensitive security action (e.g. password recovery or two-factor authentication bypass) on your account. To verify your identity, please enter the authorization code below:</p>
+            
+            <div class="otp-code">{{ code }}</div>
+
+            <div class="security-box">
+                <div class="detail-row">🌐 IP Address: <strong>{{ ip_address }}</strong></div>
+                <div class="detail-row">💻 Device / Browser: <strong>{{ device }}</strong></div>
+                <div class="detail-row">⏰ Time: <strong>{{ timestamp }}</strong></div>
+            </div>
+
+            <div class="caution-alert">
+                <strong>⚠️ Warning:</strong> This authorization code will expire in 10 minutes. Under no circumstances should you share this code with anyone else, including our customer support team.
+            </div>
+
+            <p class="body-text">If you did not make this request, your account credentials might have been compromised. Please immediately change your password and review your active sessions in the dashboard.</p>
+        </div>
+        <div class="footer">
+            <p>This is a critical security transaction. Support details can be verified via our portal.</p>
+            <p style="margin-top: 10px;">SaaS Platform Security Team &bull; San Francisco, CA</p>
+            <p style="margin-top: 5px;"><a href="{{ support_url }}">Contact Security Support</a></p>
+        </div>
+    </div>
+</body>
+</html>
