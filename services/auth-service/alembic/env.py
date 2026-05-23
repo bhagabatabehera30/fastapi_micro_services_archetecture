@@ -11,6 +11,9 @@ from alembic import context
 # Import our Base and models
 from packages.shared.database.core import Base
 from src.domain.entities.user import User
+from src.domain.entities.role import Role
+from src.domain.entities.permission import Permission
+from src.domain.entities.association_tables import user_roles, role_permissions
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

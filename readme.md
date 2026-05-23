@@ -126,3 +126,102 @@ Because Alembic runs as `root` inside the docker container runtime, the newly ge
 ```bash
 docker compose exec auth-service chown -R 1000:1000 /app/services/auth-service/alembic
 ```
+
+---
+
+## 🛡️ Granular Database-Backed RBAC & Permissions
+
+The monorepo uses a highly scalable, professional **Many-to-Many Role-Based Access Control (RBAC)** architecture that supports granular database-backed permission mapping and stateless downstream checking.
+
+### 📊 Relational Schema Structure
+
+```mermaid
+erDiagram
+    users ||--o{ user_roles : "has roles"
+    roles ||--o{ user_roles : "assigned to"
+    roles ||--o{ role_permissions : "has permissions"
+    permissions ||--o{ role_permissions : "assigned to"
+
+    users {
+        int id PK
+        string username
+        string email
+        string hashed_password
+        boolean is_active
+    }
+    roles {
+        int id PK
+        string name "unique index"
+        string description
+    }
+    permissions {
+        int id PK
+        string name
+        string slug "unique index (e.g. jobs.trigger)"
+        string module "index"
+    }
+    user_roles {
+        int user_id FK
+        int role_id FK
+    }
+    role_permissions {
+        int role_id FK
+        int permission_id FK
+    }
+```
+
+### 🔑 High Performance Stateless Claims Verification
+
+To prevent high-latency, synchronous database lookups in downstream microservices, permissions are compiled at login and processed **statelessly** through JWT claims:
+
+1. **Authentication Stage (`auth-service`)**:
+   Upon authentication, the user's role permissions are queried and aggregated. The complete list of permission slugs (e.g., `["jobs.trigger", "customers.view"]`) is embedded directly into the JWT payload claim under `"permissions": [...]`.
+2. **Stateless Middleware Stage (`packages/shared/auth/middleware.py`)**:
+   Downstream microservices (like `notification-service`) validate the token cryptographically and extract the permissions array statelessly in $O(1)$ time.
+3. **Endpoint Protection Stage (`PermissionChecker`)**:
+   Endpoints specify their exact required permission slug using FastAPI dependency injection.
+
+---
+
+### 🛡️ How to Secure Microservice Endpoints
+
+Use the class-based `PermissionChecker` dependency inside your FastAPI routers:
+
+```python
+from fastapi import APIRouter, Depends
+from packages.shared.auth.middleware import PermissionChecker, TokenData
+
+router = APIRouter()
+
+# Secure this endpoint using PermissionChecker
+@router.post("/trigger-email")
+def trigger_email(
+    email: str,
+    token_data: TokenData = Depends(PermissionChecker("jobs.trigger"))
+):
+    return {"status": "Success", "caller_role": token_data.role}
+```
+
+*   **Backward Compatibility**: The existing `RoleChecker(["admin", "user"])` class remains fully supported and functional for checking coarse-grained role-based restrictions.
+
+---
+
+### 🌱 Seeding Defaults & Quick Verification
+
+On application startup, the database lifespan automatically seeds the following:
+*   **Permissions**: `jobs.trigger`, `customers.view`, `customers.create`, `customers.update`, `customers.delete`
+*   **Roles**:
+    *   `admin`: Full granular permissions granted.
+    *   `user`: Restricted permissions (`customers.view` only).
+*   **Superadmin**:
+    *   **Username**: `superadmin`
+    *   **Password**: `admin123`
+    *   **Role**: `admin`
+
+#### Running End-to-End Verification
+
+An automated dependency-free verification script is available in the root workspace to test permissions, roles, and endpoints. To run it:
+
+```bash
+python3 verify_rbac.py
+```
